@@ -1,0 +1,31 @@
+{
+    "name": "@kiranbandi/snapshot",
+    "version": "0.0.1",
+    "description": "A state management system for implicit and explicit re-visitation in state based visualizations and dashboards.",
+    "main": "dist/snapshot.js",
+    "repository": "git@github.com:kiranbandi/snapshot.git",
+    "keywords": [
+        "visualization",
+        "provenance",
+        "history",
+        "state management"
+    ],
+    "scripts": {
+        "build": "rollup -c rollup.config.js",
+        "release": "npm run build && np",
+        "test": "echo \"No test specified\""
+    },
+    "author": "kiranbandi <bvenkatkiran@gmail.com>",
+    "license": "MIT",
+    "dependencies": {
+        "cash-dom": "^8.0.0",
+        "draggabilly": "^2.3.0",
+        "lodash": "^4.17.10"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^14.0.0",
+        "@rollup/plugin-node-resolve": "^8.4.0",
+        "rollup": "^2.21.0",
+        "rollup-plugin-babel": "^4.4.0"
+    }
+}
