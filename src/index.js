@@ -14,17 +14,25 @@ var triggeredData = {};
 var isAutoModeON = false;
 var isIntialized = false;
 var stackedSnapshot = {};
+var thumbnailOptions = {};
 
-snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, onRecallCallback = () => {}) {
+snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options = { 'class': 'snapshot', 'type': 'svg', 'size': { 'width': 100, 'height': 100 } }, onRecallCallback = () => {}) {
 
     isAutoModeON = isAuto;
+    thumbnailOptions = {
+        'class': options.class,
+        'type': options.type,
+        'size': { 'height': options.size.height || 100, 'width': options.size.width || 100 }
+    }
 
     if (!isIntialized) {
+
+        let containerWidth = (+thumbnailOptions.size.width + 35);
         // create a snapshot panel container 
         let snapshotContainer = cash('<div class="snapshot-custom-wrapper"><h5 style="font-size: 15px;text-transform: uppercase;margin: 5px 0px 0px 0px;font-weight: bold;color: #424857;">snapshot panel</h5></div>')
             .css({
                 'background': 'rgba(255, 255, 255, 0.90)',
-                'width': '275px',
+                'width': containerWidth < 235 ? 235 : containerWidth + 'px',
                 'position': 'fixed',
                 'top': '100px',
                 'left': '15px',
@@ -177,6 +185,60 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, onRecall
     isIntialized = true;
 }
 
+
+function createThumbnail(thumbnailData, uri) {
+
+    const snapshotID = uniqueId();
+    // store snapshotData
+    datastore[snapshotID] = thumbnailData;
+    let imageButton = cash('<div class="snapshot-entry" id=' + snapshotID + '></div>')
+        .css({
+            'border': ' 1px solid transparent',
+            'border-radius': ' 4px',
+            'border-color': ' #1997c6',
+            'display': 'inline-block',
+            'position': 'relative',
+            'overflow': 'hidden',
+            'margin': '5px auto',
+            'cursor': 'pointer'
+        })
+        .appendTo('.snapshot-image-wrapper')
+        .on('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const targetName = event.target.className,
+                uniqueCode = event.currentTarget.id;
+            if (targetName.indexOf('snapshot-recall') > -1) {
+                const data = datastore[uniqueCode];
+                // store seperately so self triggerring doesnt occur
+                triggeredData = _.cloneDeep(data);
+                if (data) { onRecall(data) }
+            } else {
+                delete datastore[uniqueCode];
+                cash('#' + uniqueCode).remove();
+            }
+
+        });
+
+    cash('<div class="snapshot-delete"><span>×</span></div>')
+        .css({
+            'background': ' white',
+            'border-radius': ' 10px',
+            'width': ' 20px',
+            'position': ' absolute',
+            'right': ' 2px',
+            'top': ' 2px',
+            'color': ' black',
+            'opacity': ' 1',
+            'float': ' right',
+            'font-size': ' 21px',
+            'font-weight': ' bold',
+            'line-height': ' 1'
+        })
+        .appendTo(imageButton);
+    imageButton.prepend('<img class="snapshot-recall" height=' + thumbnailOptions.size.height + ' width=' + thumbnailOptions.size.width + ' id=' + snapshotID + ' src=' + uri + ' />')
+}
+
 snapshot.updateSnapshot = function(data) {
     // store a cloned copy of the data
     currentData = _.cloneDeep(data);
@@ -193,66 +255,20 @@ snapshot.storeSnapshot = function() {
     currentData = false;
     // clear trigger 
     triggeredData = false;
-
-    // Get the SVG element
-    let svgElements = cash('.snapshot-thumbnail');
+    // Get the Thumbnail element
+    let thumbnailElements = cash(thumbnailOptions.class);
     // check if there is a visual snapshot is available to be stored
-    if (isNewSnapshotAvailable && svgElements.length > 0) {
-
-        ParseSVG(svgElements[0]).then((svgEl) => {
-            svgSaver.svgAsPngUri(svgEl, { 'scale': '0.5' })
-                .then(uri => {
-                    const snapshotID = uniqueId();
-                    // store snapshotData
-                    datastore[snapshotID] = snapshotData;
-                    let imageButton = cash('<div class="snapshot-entry" id=' + snapshotID + '></div>')
-                        .css({
-                            'border': ' 1px solid transparent',
-                            'border-radius': ' 4px',
-                            'border-color': ' #1997c6',
-                            'display': 'inline-block',
-                            'position': 'relative',
-                            'overflow': 'hidden',
-                            'margin': '5px auto',
-                            'cursor': 'pointer'
-                        })
-                        .appendTo('.snapshot-image-wrapper')
-                        .on('click', function(event) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            const targetName = event.target.className,
-                                uniqueCode = event.currentTarget.id;
-                            if (targetName.indexOf('snapshot-recall') > -1) {
-                                const data = datastore[uniqueCode];
-                                // store seperately so self triggerring doesnt occur
-                                triggeredData = _.cloneDeep(data);
-                                if (data) { onRecall(data) }
-                            } else {
-                                delete datastore[uniqueCode];
-                                cash('#' + uniqueCode).remove();
-                            }
-
-                        });
-
-                    cash('<div class="snapshot-delete"><span>×</span></div>')
-                        .css({
-                            'background': ' white',
-                            'border-radius': ' 10px',
-                            'width': ' 20px',
-                            'position': ' absolute',
-                            'right': ' 2px',
-                            'top': ' 2px',
-                            'color': ' black',
-                            'opacity': ' 1',
-                            'float': ' right',
-                            'font-size': ' 21px',
-                            'font-weight': ' bold',
-                            'line-height': ' 1'
-                        })
-                        .appendTo(imageButton);
-                    imageButton.prepend('<img class="snapshot-recall" height="100" width="235" id=' + snapshotID + ' src=' + uri + ' />')
+    if (isNewSnapshotAvailable && thumbnailElements.length > 0) {
+        if (thumbnailOptions.type == 'canvas') {
+            createThumbnail(snapshotData, thumbnailElements[0].toDataURL('image/png', 0.75));
+        } else {
+            ParseSVG(thumbnailElements[0])
+                .then((svgEl) => {
+                    svgSaver
+                        .svgAsPngUri(svgEl, { 'scale': '0.5' })
+                        .then((uri) => createThumbnail(snapshotData, uri));
                 });
-        });
+        }
     }
 }
 

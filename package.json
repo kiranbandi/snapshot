@@ -11,6 +11,7 @@
         "state management"
     ],
     "scripts": {
+        "start": "rollup -c rollup.config.js -w",
         "build": "rollup -c rollup.config.js",
         "release": "npm run build && np",
         "test": "echo \"No test specified\""
@@ -27,6 +28,7 @@
         "@rollup/plugin-node-resolve": "^8.4.0",
         "babel-core": "^6.26.3",
         "babel-loader": "^8.1.0",
-        "rollup": "^2.21.0"
+        "rollup": "^2.21.0",
+        "rollup-watch": "^4.3.1"
     }
 }
