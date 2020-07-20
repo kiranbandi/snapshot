@@ -1,4 +1,4 @@
-import { isEqual, uniqueId } from 'lodash';
+import { isEqual, uniqueId, cloneDeep } from 'lodash';
 import Draggabilly from 'draggabilly';
 import cash from "cash-dom";
 import ParseSVG from './ParseSVG';
@@ -27,12 +27,12 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
 
     if (!isIntialized) {
 
-        let containerWidth = (+thumbnailOptions.size.width + 35);
+        let containerWidth = (+thumbnailOptions.size.width + 40);
         // create a snapshot panel container 
         let snapshotContainer = cash('<div class="snapshot-custom-wrapper"><h5 style="font-size: 15px;text-transform: uppercase;margin: 5px 0px 0px 0px;font-weight: bold;color: #424857;">snapshot panel</h5></div>')
             .css({
                 'background': 'rgba(255, 255, 255, 0.90)',
-                'width': containerWidth < 235 ? 235 : containerWidth + 'px',
+                'width': containerWidth < 275 ? 275 : containerWidth + 'px',
                 'position': 'fixed',
                 'top': '100px',
                 'left': '15px',
@@ -211,7 +211,7 @@ function createThumbnail(thumbnailData, uri) {
             if (targetName.indexOf('snapshot-recall') > -1) {
                 const data = datastore[uniqueCode];
                 // store seperately so self triggerring doesnt occur
-                triggeredData = _.cloneDeep(data);
+                triggeredData = cloneDeep(data);
                 if (data) { onRecall(data) }
             } else {
                 delete datastore[uniqueCode];
@@ -241,7 +241,7 @@ function createThumbnail(thumbnailData, uri) {
 
 snapshot.updateSnapshot = function(data) {
     // store a cloned copy of the data
-    currentData = _.cloneDeep(data);
+    currentData = cloneDeep(data);
     // if timer is ON reset it to be triggered with the new data
     if (isTimerON)
         snapshotTimer.reset();
@@ -293,5 +293,5 @@ function Timer(fn, t) {
         // start with new interval, stop current interval
     this.reset = function() { return this.stop().start() };
 }
-
-module.exports = snapshot;
+window.snapshot = snapshot;
+export default snapshot;
