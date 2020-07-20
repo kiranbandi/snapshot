@@ -13,7 +13,8 @@ Set the class 'snapshot' on the canvas or svg element that you want to be stored
 
 Then initialize snapshot by setting the automatic timer mode and interval (milliseconds), thumbnail options such as its class name, size and type and finally a callback that gets called with the data in the snapshot, that needs to be handled by you to update the visualization 
 
-```initializeSnapshot(true, 1000,
+``` 
+  initializeSnapshot(true, 1000,
     {
     'class': '.snapshot',
     'type': 'svg',
