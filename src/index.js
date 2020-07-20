@@ -294,4 +294,4 @@ function Timer(fn, t) {
     this.reset = function() { return this.stop().start() };
 }
 window.snapshot = snapshot;
-export default snapshot;
+module.exports = snapshot;
