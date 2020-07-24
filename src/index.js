@@ -1,4 +1,4 @@
-import { isEqual, uniqueId, cloneDeep } from 'lodash';
+import { isEqual, uniqueId, cloneDeep, divide } from 'lodash';
 import Draggabilly from 'draggabilly';
 import cash from "cash-dom";
 import ParseSVG from './ParseSVG';
@@ -15,6 +15,8 @@ var isAutoModeON = false;
 var isIntialized = false;
 var stackedSnapshot = {};
 var thumbnailOptions = {};
+
+var isMinimized = true;
 
 snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options = { 'class': 'snapshot', 'type': 'svg', 'size': { 'width': 100, 'height': 100 } }, onRecallCallback = () => {}) {
 
@@ -45,6 +47,34 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
                 'text-align': 'center'
             })
             .appendTo('body');
+
+        cash('<span>&#x26F6;</span>')
+            .css({
+                'position': 'absolute',
+                'top': '0px',
+                'right': '5px',
+                'color': 'black',
+                'font-weight': 'bold',
+                'font-size': '20px',
+                'cursor': 'pointer',
+            })
+            .appendTo(snapshotContainer)
+            .on('click', function(event) {
+                if (isMinimized) {
+                    cash('.snapshot-custom-wrapper')
+                        .css({
+                            'width': '95%'
+                        })
+                    isMinimized = false;
+                } else {
+                    let containerWidth = (+thumbnailOptions.size.width + 40);
+                    cash('.snapshot-custom-wrapper')
+                        .css({
+                            'width': containerWidth < 275 ? 275 : containerWidth + 'px',
+                        })
+                    isMinimized = true;
+                }
+            })
 
         cash('<input type="checkbox" id="snapshot-mode-checkbox" ' + (isAuto ? 'checked' : '') + ' ></input>')
             .appendTo(snapshotContainer)
@@ -199,7 +229,7 @@ function createThumbnail(thumbnailData, uri) {
             'display': 'inline-block',
             'position': 'relative',
             'overflow': 'hidden',
-            'margin': '5px auto',
+            'margin': '5px 5px 5px 0px',
             'cursor': 'pointer'
         })
         .appendTo('.snapshot-image-wrapper')
