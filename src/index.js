@@ -1,4 +1,4 @@
-import { isEqual, uniqueId, cloneDeep, divide } from 'lodash';
+import { isEqual, uniqueId, cloneDeep } from 'lodash';
 import Draggabilly from 'draggabilly';
 import cash from "cash-dom";
 import ParseSVG from './ParseSVG';
@@ -17,6 +17,8 @@ var stackedSnapshot = {};
 var thumbnailOptions = {};
 
 var isMinimized = true;
+var playModeON = false;
+var storyTimer = false;
 
 snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options = { 'class': 'snapshot', 'type': 'svg', 'size': { 'width': 100, 'height': 100 } }, onRecallCallback = () => {}) {
 
@@ -29,12 +31,12 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
 
     if (!isIntialized) {
 
-        let containerWidth = (+thumbnailOptions.size.width + 40);
+        let containerWidth = (+thumbnailOptions.size.width + 65);
         // create a snapshot panel container 
         let snapshotContainer = cash('<div class="snapshot-custom-wrapper"><h5 style="font-size: 15px;text-transform: uppercase;margin: 5px 0px 0px 0px;font-weight: bold;color: #424857;">snapshot panel</h5></div>')
             .css({
                 'background': 'rgba(255, 255, 255, 0.90)',
-                'width': containerWidth < 275 ? 275 : containerWidth + 'px',
+                'width': containerWidth < 300 ? 300 : containerWidth + 'px',
                 'position': 'fixed',
                 'top': '100px',
                 'left': '15px',
@@ -63,14 +65,16 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
                 if (isMinimized) {
                     cash('.snapshot-custom-wrapper')
                         .css({
-                            'width': '95%'
+                            'width': '95%',
+                            'top': '10px',
+                            'left': '10px'
                         })
                     isMinimized = false;
                 } else {
-                    let containerWidth = (+thumbnailOptions.size.width + 40);
+                    let containerWidth = (+thumbnailOptions.size.width + 65);
                     cash('.snapshot-custom-wrapper')
                         .css({
-                            'width': containerWidth < 275 ? 275 : containerWidth + 'px',
+                            'width': containerWidth < 300 ? 300 : containerWidth + 'px',
                         })
                     isMinimized = true;
                 }
@@ -202,6 +206,61 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
                 triggeredData = {};
             });
 
+        let playPlauseButton = cash('<button class="story-mode">&#x25B6;</button>')
+            .css({
+                'text-align': ' center',
+                'vertical-align': ' middle',
+                'cursor': ' pointer',
+                'background-image': ' none',
+                'border': ' 1px solid transparent',
+                'padding': ' 6px 12px',
+                'font-size': ' 14px',
+                'line-height': ' 1.5',
+                'border-radius': ' 4px',
+                '-webkit-user-select': ' none',
+                '-moz-user-select': ' none',
+                '-ms-user-select': ' none',
+                'user-select': ' none',
+                'color': ' #1997c6',
+                'background-color': ' transparent',
+                'border-color': ' #1997c6',
+                'margin': ' 10px auto',
+                'display': 'inline-block',
+                'text-transform': ' uppercase',
+                'margin-left': '5px'
+            })
+            .appendTo('.snapshot-custom-wrapper')
+            .on('click', function(event) {
+
+                if (playModeON) {
+                    playModeON = false;
+                    cash('.story-mode').html('&#x25B6;');
+                    storyTimer.stop();
+                    storyTimer = null;
+                } else {
+                    playModeON = true;
+                    cash('.story-mode').html('&#x23F8;');
+
+                    let storyPoints = Object.keys(datastore);
+
+                    storyTimer = new Timer(() => {
+                        let storyPoint = storyPoints.shift();
+                        if (storyPoint) {
+                            const data = datastore[storyPoint];
+                            // store seperately so self triggerring doesnt occur
+                            triggeredData = cloneDeep(data);
+                            if (data) { onRecall(data) }
+                        } else {
+                            playModeON = false;
+                            cash('.story-mode').html('&#x25B6;');
+                            storyTimer.stop();
+                            storyTimer = null;
+                        }
+                    }, 1000);
+                }
+            });
+
+
         cash("<div class='snapshot-image-wrapper'></div>")
             .css({
                 'max-height': '300px',
@@ -219,6 +278,9 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
 function createThumbnail(thumbnailData, uri) {
 
     const snapshotID = uniqueId();
+
+    console.log(snapshotID);
+
     // store snapshotData
     datastore[snapshotID] = thumbnailData;
     let imageButton = cash('<div class="snapshot-entry" id=' + snapshotID + '></div>')
@@ -278,7 +340,7 @@ snapshot.updateSnapshot = function(data) {
 }
 
 snapshot.storeSnapshot = function() {
-    let isNewSnapshotAvailable = !!currentData && !isEqual(stackedSnapshot, currentData) && !isEqual(triggeredData, currentData);
+    let isNewSnapshotAvailable = !playModeON && !!currentData && !isEqual(stackedSnapshot, currentData) && !isEqual(triggeredData, currentData);
     // store current data in snapshot
     let snapshotData = currentData;
     // clear currentData
