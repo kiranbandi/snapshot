@@ -278,7 +278,7 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
 
 function createThumbnail(thumbnailData, uri) {
 
-    const snapshotID = uniqueId();
+    const snapshotID = 'snapshot-code-' + uniqueId();
 
     // store snapshotData
     datastore[snapshotID] = thumbnailData;
@@ -311,8 +311,7 @@ function createThumbnail(thumbnailData, uri) {
                 // trigger an option to ed``it the snapshot tag.
                 var newLabel = prompt("Please enter a new label for the selected snapshot", '');
                 labelstore[uniqueCode] = newLabel;
-
-                cash('#snapshot-label-' + uniqueCode).text(newLabel);
+                cash('#' + uniqueCode + ' > .snapshot-label').text(newLabel);
 
             } else {
                 delete datastore[uniqueCode];
@@ -356,18 +355,19 @@ function createThumbnail(thumbnailData, uri) {
         })
         .appendTo(imageButton);
 
-    cash('<div id="snapshot-label-' + snapshotID + '" class="snapshot-label">' + labelstore[snapshotID] + '</div>')
+    cash('<div class="snapshot-label">' + labelstore[snapshotID] + '</div>')
         .css({
             'background': ' white',
-            'border-radius': ' 10px',
-            'width': ' 20px',
+            'border-radius': ' 3px',
+            'min-width': ' 17px',
             'position': ' absolute',
-            'right': ' 55px',
-            'top': ' 27.5px',
+            'left': ' 2px',
+            'bottom': ' 2px',
             'color': ' black',
             'opacity': ' 1',
             'float': ' right',
-            'font-size': ' 21px',
+            'font-size': ' 15px',
+            'padding': '2px',
             'font-weight': ' bold',
             'line-height': ' 1'
         })
