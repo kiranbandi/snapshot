@@ -6,6 +6,7 @@ import svgSaver from './saveSVGasPNG';
 
 var snapshot = {};
 var datastore = {};
+var labelstore = {};
 var currentData = {};
 var onRecall = null;
 var snapshotTimer = false;
@@ -279,10 +280,9 @@ function createThumbnail(thumbnailData, uri) {
 
     const snapshotID = uniqueId();
 
-    console.log(snapshotID);
-
     // store snapshotData
     datastore[snapshotID] = thumbnailData;
+    labelstore[snapshotID] = Object.keys(datastore).length;
     let imageButton = cash('<div class="snapshot-entry" id=' + snapshotID + '></div>')
         .css({
             'border': ' 1px solid transparent',
@@ -300,13 +300,23 @@ function createThumbnail(thumbnailData, uri) {
             event.stopPropagation();
             const targetName = event.target.className,
                 uniqueCode = event.currentTarget.id;
+
             if (targetName.indexOf('snapshot-recall') > -1) {
                 const data = datastore[uniqueCode];
                 // store seperately so self triggerring doesnt occur
                 triggeredData = cloneDeep(data);
                 if (data) { onRecall(data) }
+            } else if (targetName.indexOf('snapshot-edit') > -1) {
+
+                // trigger an option to ed``it the snapshot tag.
+                var newLabel = prompt("Please enter a new label for the selected snapshot", '');
+                labelstore[uniqueCode] = newLabel;
+
+                cash('#snapshot-label-' + uniqueCode).text(newLabel);
+
             } else {
                 delete datastore[uniqueCode];
+                delete labelstore[uniqueCode];
                 cash('#' + uniqueCode).remove();
             }
 
@@ -328,6 +338,41 @@ function createThumbnail(thumbnailData, uri) {
             'line-height': ' 1'
         })
         .appendTo(imageButton);
+
+    cash('<div class="snapshot-edit">&#128393;</div>')
+        .css({
+            'background': ' white',
+            'border-radius': ' 10px',
+            'width': ' 20px',
+            'position': ' absolute',
+            'right': ' 2px',
+            'top': ' 27.5px',
+            'color': ' black',
+            'opacity': ' 1',
+            'float': ' right',
+            'font-size': ' 21px',
+            'font-weight': ' bold',
+            'line-height': ' 1'
+        })
+        .appendTo(imageButton);
+
+    cash('<div id=snapshot-label-' + snapshotID + 'class="snapshot-label">' + labelstore[snapshotID] + '</div>')
+        .css({
+            'background': ' white',
+            'border-radius': ' 10px',
+            'width': ' 20px',
+            'position': ' absolute',
+            'right': ' 55px',
+            'top': ' 27.5px',
+            'color': ' black',
+            'opacity': ' 1',
+            'float': ' right',
+            'font-size': ' 21px',
+            'font-weight': ' bold',
+            'line-height': ' 1'
+        })
+        .appendTo(imageButton);
+
     imageButton.prepend('<img class="snapshot-recall" height=' + thumbnailOptions.size.height + ' width=' + thumbnailOptions.size.width + ' id=' + snapshotID + ' src=' + uri + ' />')
 }
 
