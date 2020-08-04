@@ -356,7 +356,7 @@ function createThumbnail(thumbnailData, uri) {
         })
         .appendTo(imageButton);
 
-    cash('<div id=snapshot-label-' + snapshotID + 'class="snapshot-label">' + labelstore[snapshotID] + '</div>')
+    cash('<div id="snapshot-label-' + snapshotID + '" class="snapshot-label">' + labelstore[snapshotID] + '</div>')
         .css({
             'background': ' white',
             'border-radius': ' 10px',
