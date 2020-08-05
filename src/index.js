@@ -244,6 +244,7 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
 
                     let storyPoints = Object.keys(datastore);
 
+                    //  Also show names at this point
                     storyTimer = new Timer(() => {
                         let storyPoint = storyPoints.shift();
                         if (storyPoint) {
