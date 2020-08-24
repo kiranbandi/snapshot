@@ -21,9 +21,10 @@ var isMinimized = true;
 var playModeON = false;
 var storyTimer = false;
 
-snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options = { 'class': 'snapshot', 'type': 'svg', 'size': { 'width': 100, 'height': 100 } }, onRecallCallback = () => {}) {
+snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options = { 'class': 'snapshot', 'type': 'svg', 'size': { 'width': 100, 'height': 100 } }, onRecallCallback = () => {}, replayAvailable = false) {
 
     isAutoModeON = isAuto;
+
     thumbnailOptions = {
         'class': options.class,
         'type': options.type,
@@ -81,47 +82,50 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
                 }
             })
 
-        cash('<input type="checkbox" id="snapshot-mode-checkbox" ' + (isAuto ? 'checked' : '') + ' ></input>')
-            .appendTo(snapshotContainer)
-            .on('change', function(event) {
-                if (event.currentTarget.checked) {
-                    isAutoModeON = true;
-                    // If a timer has not been created
-                    // create it
-                    snapshotTimer = snapshotTimer ? snapshotTimer :
-                        new Timer(() => {
-                            snapshot.storeSnapshot();
-                            // stop the timer after its complete
-                            if (snapshotTimer)
-                                snapshotTimer.stop();
-                        }, timerDur);
+        if (isAuto) {
+            cash('<input type="checkbox" id="snapshot-mode-checkbox" ' + (isAuto ? 'checked' : '') + ' ></input>')
+                .appendTo(snapshotContainer)
+                .on('change', function(event) {
+                    if (event.currentTarget.checked) {
+                        isAutoModeON = true;
+                        // If a timer has not been created
+                        // create it
+                        snapshotTimer = snapshotTimer ? snapshotTimer :
+                            new Timer(() => {
+                                snapshot.storeSnapshot();
+                                // stop the timer after its complete
+                                if (snapshotTimer)
+                                    snapshotTimer.stop();
+                            }, timerDur);
 
-                    // turn timer off and stop it
-                    //  then prime it to be triggered 
-                    isTimerON = false;
-                    snapshotTimer.stop();
-                    cash('.snapshot-trigger').text('start');
+                        // turn timer off and stop it
+                        //  then prime it to be triggered 
+                        isTimerON = false;
+                        snapshotTimer.stop();
+                        cash('.snapshot-trigger').text('start');
 
-                } else {
-                    // turn timer off and stop it
-                    //  then prime it to be triggered 
-                    isTimerON = false;
-                    snapshotTimer.stop();
-                    snapshotTimer = false;
-                    isAutoModeON = false;
-                    cash('.snapshot-trigger').text('snapshot');
-                }
-            });
+                    } else {
+                        // turn timer off and stop it
+                        //  then prime it to be triggered 
+                        isTimerON = false;
+                        snapshotTimer.stop();
+                        snapshotTimer = false;
+                        isAutoModeON = false;
+                        cash('.snapshot-trigger').text('snapshot');
+                    }
+                });
+
+            cash('<label for="snapshot-mode-checkbox">AUTO</label>')
+                .css({
+                    'margin-right': '10px',
+                    'margin-left': '5px',
+                    'cursor': 'pointer',
+                    'color': 'black'
+                })
+                .appendTo(snapshotContainer);
+        }
 
 
-        cash('<label for="snapshot-mode-checkbox">AUTO</label>')
-            .css({
-                'margin-right': '10px',
-                'margin-left': '5px',
-                'cursor': 'pointer',
-                'color': 'black'
-            })
-            .appendTo(snapshotContainer);
 
         snapshotTimer = isAuto ? new Timer(() => {
             snapshot.storeSnapshot();
@@ -207,61 +211,59 @@ snapshot.initializeSnapshot = function(isAuto = false, timerDur = 5000, options 
                 triggeredData = {};
             });
 
-        let playPlauseButton = cash('<button class="story-mode">&#x25B6;</button>')
-            .css({
-                'text-align': ' center',
-                'vertical-align': ' middle',
-                'cursor': ' pointer',
-                'background-image': ' none',
-                'border': ' 1px solid transparent',
-                'padding': ' 6px 12px',
-                'font-size': ' 14px',
-                'line-height': ' 1.5',
-                'border-radius': ' 4px',
-                '-webkit-user-select': ' none',
-                '-moz-user-select': ' none',
-                '-ms-user-select': ' none',
-                'user-select': ' none',
-                'color': ' #1997c6',
-                'background-color': ' transparent',
-                'border-color': ' #1997c6',
-                'margin': ' 10px auto',
-                'display': 'inline-block',
-                'text-transform': ' uppercase',
-                'margin-left': '5px'
-            })
-            .appendTo('.snapshot-custom-wrapper')
-            .on('click', function(event) {
+        if (replayAvailable) {
+            let playPlauseButton = cash('<button class="story-mode">&#x25B6;</button>')
+                .css({
+                    'text-align': ' center',
+                    'vertical-align': ' middle',
+                    'cursor': ' pointer',
+                    'background-image': ' none',
+                    'border': ' 1px solid transparent',
+                    'padding': ' 6px 12px',
+                    'font-size': ' 14px',
+                    'line-height': ' 1.5',
+                    'border-radius': ' 4px',
+                    '-webkit-user-select': ' none',
+                    '-moz-user-select': ' none',
+                    '-ms-user-select': ' none',
+                    'user-select': ' none',
+                    'color': ' #1997c6',
+                    'background-color': ' transparent',
+                    'border-color': ' #1997c6',
+                    'margin': ' 10px auto',
+                    'display': 'inline-block',
+                    'text-transform': ' uppercase',
+                    'margin-left': '5px'
+                })
+                .appendTo('.snapshot-custom-wrapper')
+                .on('click', function(event) {
 
-                if (playModeON) {
-                    playModeON = false;
-                    cash('.story-mode').html('&#x25B6;');
-                    storyTimer.stop();
-                    storyTimer = null;
-                } else {
-                    playModeON = true;
-                    cash('.story-mode').html('&#x23F8;');
-
-                    let storyPoints = Object.keys(datastore);
-
-                    //  Also show names at this point
-                    storyTimer = new Timer(() => {
-                        let storyPoint = storyPoints.shift();
-                        if (storyPoint) {
-                            const data = datastore[storyPoint];
-                            // store seperately so self triggerring doesnt occur
-                            triggeredData = cloneDeep(data);
-                            if (data) { onRecall(data) }
-                        } else {
-                            playModeON = false;
-                            cash('.story-mode').html('&#x25B6;');
-                            storyTimer.stop();
-                            storyTimer = null;
-                        }
-                    }, 1000);
-                }
-            });
-
+                    if (playModeON) {
+                        playModeON = false;
+                        cash('.story-mode').html('&#x25B6;');
+                        storyTimer.stop();
+                        storyTimer = null;
+                    } else {
+                        playModeON = true;
+                        cash('.story-mode').html('&#x23F8;');
+                        let storyPoints = Object.keys(datastore);
+                        storyTimer = new Timer(() => {
+                            let storyPoint = storyPoints.shift();
+                            if (storyPoint) {
+                                const data = datastore[storyPoint];
+                                // store seperately so self triggerring doesnt occur
+                                triggeredData = cloneDeep(data);
+                                if (data) { onRecall(data) }
+                            } else {
+                                playModeON = false;
+                                cash('.story-mode').html('&#x25B6;');
+                                storyTimer.stop();
+                                storyTimer = null;
+                            }
+                        }, 1000);
+                    }
+                });
+        }
 
         cash("<div class='snapshot-image-wrapper'></div>")
             .css({
