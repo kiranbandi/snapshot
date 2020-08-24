@@ -1,6 +1,6 @@
 {
     "name": "@kiranbandi/snapshot",
-    "version": "3.0.0",
+    "version": "4.0.0",
     "description": "A state management system for implicit and explicit re-visitation in state based visualizations and dashboards.",
     "main": "dist/snapshot.js",
     "repository": "git@github.com:kiranbandi/snapshot.git",
